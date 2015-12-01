@@ -28,10 +28,14 @@ public class HtmlDownloader {
     public static final String TITLE_PATTERN_1 = ">(.*\\s*)<";
     public static final String TAGS_PATTERN = "<[^>]*>";
     public static final String VOTE_PATTERN = "^(10|[0-9])";
+    public static final String GET_NUMBER_PATTERN = "(\\d+)";
 
     private static final String BASE_URL = "http://www.imdb.com/title/";
     private static final String BASE_MOBILE_URL = "http://m.imdb.com/title/";
     private static final String REVIEW_ROUTE = "/reviews"; //Without spoilers ?filter=best&spoiler=hide
+    private static final String LOVED_IT = "?filter=love";
+    private static final String HATED_IT = "?filter=hate";
+    private static final String ALL_REVIEWS = "?start=0;count=";
 
     private String URL;
 
@@ -44,6 +48,17 @@ public class HtmlDownloader {
     public HtmlDownloader(String url) {
         this.movies = new ArrayList<Movie>();
         this.URL = url;
+    }
+
+    // convert from internal Java String format -> UTF-8
+    public static String convertToUTF8(String s) {
+        String out = null;
+        try {
+            out = new String(s.getBytes("UTF-8"), "ISO-8859-1");
+        } catch (java.io.UnsupportedEncodingException e) {
+            return null;
+        }
+        return out;
     }
 
     public void StartParsing() {
@@ -73,7 +88,7 @@ public class HtmlDownloader {
     }
 
     public void DownloadMovie() {
-        for (Map.Entry<String,String> entry : linkMap.entrySet()) {
+        for (Map.Entry<String, String> entry : linkMap.entrySet()) {
             String movieId = entry.getKey();
             String movieUrl = entry.getValue();
             GetMovieReview(movieId);
@@ -83,7 +98,7 @@ public class HtmlDownloader {
         CreateJson();
     }
 
-    private void GetMovieReview(String id) {
+    private synchronized void GetMovieReview(String id) {
         ArrayList<Review> reviews = new ArrayList<Review>();
         String url = BASE_URL + id + REVIEW_ROUTE;
         String movieTitle = null;
@@ -114,49 +129,50 @@ public class HtmlDownloader {
                 }
             }
 
-            //Fetch reviews
+            //Fetch numbers of reviews
+            Elements total = doc.select("div#tn15content > table");
+            String revCount = GetNumber(total.get(1).select("td").get(1).toString());
+            url = url + ALL_REVIEWS + revCount;
+            doc = Jsoup.connect(url).userAgent("Mozilla").timeout(30 * 1000).maxBodySize(0).get();
+            //System.out.println(doc);
+
+
+            //Fetch ALL reviews
             doc.select("div.yn").remove();
+            doc.select("p:has(b)").remove();
             Elements div = doc.select("div#tn15content > div");
             Elements p = doc.select("div#tn15content > p");
-
             for (int i = 0; i < div.size(); i++) {
                 Element mDiv = div.get(i);
                 String reviewTittle = mDiv.select("h2").toString();
                 String vote = mDiv.getElementsByTag("img").attr("alt");
                 Elements small = mDiv.getElementsByTag("small");
                 String date = small.last().toString();
+//                String date = null;
 
                 date = DateConverter(RemoveHtmlTags(date)).toString();
                 reviewTittle = RemoveHtmlTags(reviewTittle);
-                int voteInt  = ConvertVote(vote);
+                int voteInt = ConvertVote(vote);
                 String text = RemoveHtmlTags(p.get(i).toString());
 
                 //Add review to reviewsList
-                reviews.add(new Review(reviewTittle,date,voteInt,text));
+                reviews.add(new Review(reviewTittle, date, voteInt, text)); //Na poczatku tablicy sa najlepsze recenzje (najwyzej ocenione przez uzytkownikow)
 
                 System.out.println(reviewTittle);
 //                System.out.println(voteInt);
 //                System.out.println(date);
 //                System.out.println(text);
             }
+
         } catch (IOException e) {
             e.printStackTrace();
         }
 
+        // Overwrite  one review per vote 1-10
+        reviews = giveMeBestForRegresiion(reviews);
 
         //Add movie to list
-        movies.add(new Movie(movieTitle,reviews));
-
-        //Create Json
-//        movie = new Movie(movieTitle,reviews);
-//        Gson gson = new GsonBuilder()
-//                .setPrettyPrinting()
-//                .disableHtmlEscaping()
-//                .create();
-//
-//        String result = gson.toJson(movie);
-//        SaveToFile(result);
-//        System.out.println(result);
+        movies.add(new Movie(movieTitle, reviews));
     }
 
     private void CreateJson() {
@@ -170,8 +186,20 @@ public class HtmlDownloader {
     }
 
     public String RemoveHtmlTags(String rawText) {
-       String result = rawText.replaceAll(TAGS_PATTERN, "");
+        String result = rawText.replaceAll(TAGS_PATTERN, "");
         return result;
+    }
+
+    private String GetNumber(String input) {
+        String output = null;
+        Pattern pattern = Pattern.compile(GET_NUMBER_PATTERN);
+        Matcher matcher = pattern.matcher(input);
+        if (matcher.find()) {
+            output = matcher.group(0);
+            return output;
+
+        }
+        return output;
     }
 
     public int ConvertVote(String rawText) {
@@ -191,17 +219,6 @@ public class HtmlDownloader {
         return date;
     }
 
-    // convert from internal Java String format -> UTF-8
-    public static String convertToUTF8(String s) {
-        String out = null;
-        try {
-            out = new String(s.getBytes("UTF-8"), "ISO-8859-1");
-        } catch (java.io.UnsupportedEncodingException e) {
-            return null;
-        }
-        return out;
-    }
-
     private void SaveToFile(String data) {
         try {
             //write converted json data to a file named "file.json"
@@ -213,5 +230,39 @@ public class HtmlDownloader {
             e.printStackTrace();
         }
 
+    }
+
+    private ArrayList<Review> giveMeBestForRegresiion(ArrayList<Review> input) {
+        Map<Integer, Review> output = new HashMap<Integer, Review>();
+        ArrayList<Review> list = null;
+        int vote = 0;
+        for (Review review : input) {
+            vote = review.getVote();
+            if (vote != 0) {
+                if (!output.containsKey(vote)) {
+                    output.put(vote, review);
+                }
+            }
+            if (output.size() == 10) {
+                list = new ArrayList<Review>(output.values());
+                return list;
+            }
+        }
+        int inputSize = input.size();
+        for (Map.Entry<Integer, Review> entry : output.entrySet()) {
+            if (entry.getValue() == null) {
+                int n = 0;
+                boolean draw = true;
+                Random rand = new Random();
+                do {
+                    n = rand.nextInt(inputSize) + 1;
+                    if (!output.containsValue(input.get(n))) {
+                        draw = false;
+                        list = new ArrayList<Review>(output.values());
+                    }
+                } while (draw);
+            }
+        }
+        return list;
     }
 }

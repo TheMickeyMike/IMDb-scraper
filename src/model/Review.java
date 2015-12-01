@@ -18,4 +18,8 @@ public class Review {
         this.vote = vote;
         this.text = text;
     }
+
+    public int getVote() {
+        return vote;
+    }
 }
