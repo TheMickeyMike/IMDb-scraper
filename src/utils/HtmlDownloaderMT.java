@@ -3,7 +3,6 @@ package utils;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import model.Movie;
-import model.Movies;
 import model.Review;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
@@ -15,14 +14,17 @@ import java.io.IOException;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 /**
  * Created by Maciej on 24.11.15.
  */
-
-public class HtmlDownloader {
+///jvisualvm --openjmx localhost:9777
+public class HtmlDownloaderMT {
 
     public static final String ID_PATTERN = "title\\/(.*)\\/";
     public static final String TITLE_PATTERN = ">(.*\\s*)<i";
@@ -38,8 +40,6 @@ public class HtmlDownloader {
     private static final String HATED_IT = "?filter=hate";
     private static final String ALL_REVIEWS = "?start=0;count=";
 
-    private static final String SERIALIZE_LOCATION = "/Users/Maciej/Desktop/IMDb-scraper/data/1.ser";
-
     private String URL;
 
     private Vector<String> linkVector = new Vector<String>();
@@ -47,10 +47,13 @@ public class HtmlDownloader {
 
     private ArrayList<Movie> movies;
 
+    private ExecutorService pool;
 
-    public HtmlDownloader(String url) {
+
+    public HtmlDownloaderMT(String url) {
         this.movies = new ArrayList<Movie>();
         this.URL = url;
+        this.pool = Executors.newFixedThreadPool(10);
     }
 
     // convert from internal Java String format -> UTF-8
@@ -94,11 +97,24 @@ public class HtmlDownloader {
         for (Map.Entry<String, String> entry : linkMap.entrySet()) {
             String movieId = entry.getKey();
             String movieUrl = entry.getValue();
-            GetMovieReview(movieId);
+//            pool.submit(new Runnable() {
+//                @Override
+//                public void run() {
+//                    GetMovieReview(movieId);
+//                }
+//            });
+//            GetMovieReview(movieId);
         }
 
-        //Serialize all movies
-        SerializeThis();
+        pool.shutdown();
+        try {
+
+
+            pool.awaitTermination(Long.MAX_VALUE, TimeUnit.MILLISECONDS);
+        }catch (Exception e ) {
+            e.printStackTrace();
+        }
+
         //All movies downloaded, lets create Json file
         CreateJson();
     }
@@ -238,17 +254,6 @@ public class HtmlDownloader {
 
     }
 
-    private void SerializeThis() {
-        Movies movieSer = new Movies();
-        movieSer.setMovies(movies);
-        new Serialize(movieSer);
-    }
-
-    private ArrayList<Movie> DeserializeThis(String location) {
-        Serialize serialize = new Serialize(location);
-        return serialize.getMovieArrayList();
-    }
-
     private ArrayList<Review> giveMeBestForRegresiion(ArrayList<Review> input) {
         Map<Integer, Review> output = new HashMap<Integer, Review>();
         ArrayList<Review> list = null;
@@ -285,4 +290,18 @@ public class HtmlDownloader {
         }
         return list;
     }
+
+    private class DownloadTask implements Runnable {
+        private String movieId;
+
+        public DownloadTask(String movieId) {
+            this.movieId = movieId;
+        }
+
+        @Override
+        public void run() {
+            GetMovieReview(movieId);
+        }
+    }
 }
+

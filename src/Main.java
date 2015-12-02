@@ -1,4 +1,5 @@
 import utils.HtmlDownloader;
+import utils.HtmlDownloaderMT;
 
 public class Main {
 
@@ -7,6 +8,8 @@ public class Main {
     public static void main(String[] args) {
         HtmlDownloader html = new HtmlDownloader(URL);
         html.StartParsing();
+//        HtmlDownloaderMT htmlDownloaderMT = new HtmlDownloaderMT(URL);
+//        htmlDownloaderMT.StartParsing();
 //        Sentiment sentiment = new Sentiment();
 //        sentiment.Start();
     }

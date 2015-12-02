@@ -1,11 +1,12 @@
 package model;
 
+import java.io.Serializable;
 import java.time.LocalDate;
 
 /**
  * Created by Maciej on 27.11.15.
  */
-public class Review {
+public class Review implements Serializable{
 
     private String tittle;
     private String date;
