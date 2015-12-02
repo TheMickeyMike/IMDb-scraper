@@ -53,7 +53,7 @@ public class HtmlDownloaderMT {
     public HtmlDownloaderMT(String url) {
         this.movies = new ArrayList<Movie>();
         this.URL = url;
-        this.pool = Executors.newFixedThreadPool(10);
+        this.pool = Executors.newFixedThreadPool(5);
     }
 
     // convert from internal Java String format -> UTF-8
@@ -97,12 +97,12 @@ public class HtmlDownloaderMT {
         for (Map.Entry<String, String> entry : linkMap.entrySet()) {
             String movieId = entry.getKey();
             String movieUrl = entry.getValue();
-//            pool.submit(new Runnable() {
-//                @Override
-//                public void run() {
-//                    GetMovieReview(movieId);
-//                }
-//            });
+            pool.submit(new Runnable() {
+                @Override
+                public void run() {
+                    GetMovieReview(movieId);
+                }
+            });
 //            GetMovieReview(movieId);
         }
 
@@ -119,7 +119,7 @@ public class HtmlDownloaderMT {
         CreateJson();
     }
 
-    private synchronized void GetMovieReview(String id) {
+    private void GetMovieReview(String id) {
         ArrayList<Review> reviews = new ArrayList<Review>();
         String url = BASE_URL + id + REVIEW_ROUTE;
         String movieTitle = null;

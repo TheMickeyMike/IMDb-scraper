@@ -2,9 +2,15 @@ package utils;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+import edu.stanford.nlp.ling.CoreAnnotations;
+import edu.stanford.nlp.pipeline.Annotation;
+import edu.stanford.nlp.pipeline.StanfordCoreNLP;
+import edu.stanford.nlp.sentiment.SentimentCoreAnnotations;
+import edu.stanford.nlp.util.CoreMap;
 import model.Movie;
 import model.Movies;
 import model.Review;
+import model.Sentiment;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
@@ -103,7 +109,7 @@ public class HtmlDownloader {
         CreateJson();
     }
 
-    private synchronized void GetMovieReview(String id) {
+    private void GetMovieReview(String id) {
         ArrayList<Review> reviews = new ArrayList<Review>();
         String url = BASE_URL + id + REVIEW_ROUTE;
         String movieTitle = null;
@@ -141,7 +147,6 @@ public class HtmlDownloader {
             doc = Jsoup.connect(url).userAgent("Mozilla").timeout(30 * 1000).maxBodySize(0).get();
             //System.out.println(doc);
 
-
             //Fetch ALL reviews
             doc.select("div.yn").remove();
             doc.select("p:has(b)").remove();
@@ -160,8 +165,11 @@ public class HtmlDownloader {
                 int voteInt = ConvertVote(vote);
                 String text = RemoveHtmlTags(p.get(i).toString());
 
+
+                Sentiment sentiments = GetSentimentsCoeff(text);
                 //Add review to reviewsList
-                reviews.add(new Review(reviewTittle, date, voteInt, text)); //Na poczatku tablicy sa najlepsze recenzje (najwyzej ocenione przez uzytkownikow)
+                //TODO!!!!!
+//                reviews.add(new Review(reviewTittle, date, voteInt, text, sentiments)); //Na poczatku tablicy sa najlepsze recenzje (najwyzej ocenione przez uzytkownikow)
 
 //                System.out.println(reviewTittle);
 
@@ -284,5 +292,46 @@ public class HtmlDownloader {
             }
         }
         return list;
+    }
+
+    private Sentiment GetSentimentsCoeff(String review) {
+        Sentiment sentimentCoef = null;
+        int veryPositive = 0;
+        int positive = 0;
+        int neutral = 0;
+        int negative = 0;
+        int veryNegative = 0;
+
+        Properties props = new Properties();
+        props.put("sentiment.model", "/Users/Maciej/Desktop/IMDb-scraper/lib/stanford-corenlp-full-2015-04-20/models/model-0009-79,68.ser.gz");
+        props.put("annotators", "tokenize, ssplit, pos, lemma, parse, sentiment");
+        StanfordCoreNLP pipeline = new StanfordCoreNLP(props);
+        Annotation annotation = pipeline.process(review);
+        List<CoreMap> sentences = annotation.get(CoreAnnotations.SentencesAnnotation.class);
+        for (CoreMap sentence : sentences) {
+            String sentiment = sentence.get(SentimentCoreAnnotations.SentimentClass.class);
+            switch (sentiment) {
+                case "Very positive":
+                    veryPositive++;
+                    break;
+                case "Positive":
+                    positive++;
+                    break;
+                case "Neutral":
+                    neutral++;
+                    break;
+                case "Negative":
+                    negative++;
+                    break;
+                case "Very negative":
+                    veryNegative++;
+                    break;
+                default:
+                    break;
+            }
+        }
+        sentimentCoef = new Sentiment(veryPositive, positive, neutral, negative, veryNegative);
+        System.out.println(veryPositive + " " + positive + " " + neutral + " " + negative + " " + veryNegative);
+        return sentimentCoef;
     }
 }

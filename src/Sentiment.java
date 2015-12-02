@@ -12,6 +12,7 @@ import java.util.Properties;
 /**
  * Created by Maciej on 29.11.15.
  */
+//  very negative, negative, neutral, positive, and very positive.
 public class Sentiment {
     String text = "Awesome movie! \n That was good movie. \n My name is Mike. \n Not bad movie. \n This is the worst movie ever!";
 
