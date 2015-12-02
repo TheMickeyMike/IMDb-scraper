@@ -22,4 +22,8 @@ public class Review {
     public int getVote() {
         return vote;
     }
+
+    public String getTittle() {
+        return tittle;
+    }
 }

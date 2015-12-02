@@ -158,7 +158,8 @@ public class HtmlDownloader {
                 //Add review to reviewsList
                 reviews.add(new Review(reviewTittle, date, voteInt, text)); //Na poczatku tablicy sa najlepsze recenzje (najwyzej ocenione przez uzytkownikow)
 
-                System.out.println(reviewTittle);
+//                System.out.println(reviewTittle);
+
 //                System.out.println(voteInt);
 //                System.out.println(date);
 //                System.out.println(text);
@@ -241,6 +242,8 @@ public class HtmlDownloader {
             if (vote != 0) {
                 if (!output.containsKey(vote)) {
                     output.put(vote, review);
+                    System.out.println(review.getTittle());
+                    System.out.println("Vote: " + review.getVote() + "\n");
                 }
             }
             if (output.size() == 10) {
