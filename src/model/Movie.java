@@ -14,4 +14,8 @@ public class Movie implements Serializable{
         Tittle = tittle;
         this.reviews = reviews;
     }
+
+    public ArrayList<Review> getReviews() {
+        return reviews;
+    }
 }

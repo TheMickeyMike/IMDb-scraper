@@ -12,14 +12,21 @@ public class Review implements Serializable{
     private String date;
     private int vote;
     private String text;
-    private ArrayList<Sentiment> sentiments;
+    private Sentiment sentiments;
 
     public Review(String tittle, String date, int vote, String text) {
         this.tittle = tittle;
         this.date = date;
         this.vote = vote;
         this.text = text;
-//        this.sentiments = sentiments; //TODO
+    }
+
+    public void setSentiments(Sentiment sentiments) {
+        this.sentiments = sentiments;
+    }
+
+    public String getText() {
+        return text;
     }
 
     public int getVote() {

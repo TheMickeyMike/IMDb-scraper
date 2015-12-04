@@ -18,6 +18,8 @@ import org.jsoup.select.Elements;
 
 import java.io.FileWriter;
 import java.io.IOException;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
@@ -33,6 +35,8 @@ import java.util.regex.Pattern;
 ///jvisualvm --openjmx localhost:9777
 public class MovieDataDownloader {
 
+    public static String PATH_BASE = "";
+
     public static final String ID_PATTERN = "title\\/(.*)\\/";
     public static final String TITLE_PATTERN = ">(.*\\s*)<i";
     public static final String TITLE_PATTERN_1 = ">(.*\\s*)<";
@@ -41,15 +45,12 @@ public class MovieDataDownloader {
     public static final String GET_NUMBER_PATTERN = "(\\d+)";
 
     private static final String BASE_URL = "http://www.imdb.com/title/";
-    private static final String BASE_MOBILE_URL = "http://m.imdb.com/title/";
     private static final String REVIEW_ROUTE = "/reviews"; //Without spoilers ?filter=best&spoiler=hide
-    private static final String LOVED_IT = "?filter=love";
-    private static final String HATED_IT = "?filter=hate";
     private static final String ALL_REVIEWS = "?start=0;count=";
 
     private static final String SERIALIZE_LOCATION = "/Users/Maciej/Desktop/IMDb-scraper/data/1.ser";
 
-    private static final int TIMEOUT = 30 * 1000;
+    private static final int TIMEOUT = 60 * 1000;
 
     private String URL;
 
@@ -59,21 +60,25 @@ public class MovieDataDownloader {
 
     private ExecutorService pool;
 
-
-    private  StanfordCoreNLP pipeline;
+    private ReviewSentiment reviewSentiment;
 
 
     public MovieDataDownloader(String url) {
+        setPath();
+        System.out.println("Saving in: " + PATH_BASE);
         int availableProcessors = Runtime.getRuntime().availableProcessors();
         this.movies = new ArrayList<Movie>();
         this.URL = url;
         this.pool = Executors.newFixedThreadPool(availableProcessors);
         System.out.println("Available Processing Power: " + availableProcessors);
+        this.reviewSentiment = new ReviewSentiment();
     }
 
     public void starDownloading() {
         getTop250MoviesLink();
         downloadMovieData();
+        CreateJson();
+        reviewSentiment.getReviewSentiment(movies);
         //Serialize all movies
         SerializeThis();
         //All movies downloaded, lets create Json file
@@ -193,6 +198,7 @@ public class MovieDataDownloader {
         movies.add(movie);
     }
 
+
     public String RemoveHtmlTags(String rawText) {
         String result = rawText.replaceAll(TAGS_PATTERN, "");
         return result;
@@ -232,6 +238,7 @@ public class MovieDataDownloader {
         Map<Integer, Review> output = new HashMap<Integer, Review>();
         ArrayList<Review> list = null;
         int vote = 0;
+
         for (Review review : input) {
             vote = review.getVote();
             if (vote != 0) {
@@ -248,20 +255,41 @@ public class MovieDataDownloader {
         }
         //When there is no review for vote, draw one from all review
         int inputSize = input.size();
-        for (Map.Entry<Integer, Review> entry : output.entrySet()) {
-            if (entry.getValue() == null) {
+        for (int i = 1; i <= 10; i++) {
+            if (!output.containsKey(i)) {
                 int n = 0;
                 boolean draw = true;
                 Random rand = new Random();
                 do {
+                    //TODO USPRAWNIC SYSTEM LOSOWANIA!
                     n = rand.nextInt(inputSize) + 1;
-                    if (!output.containsValue(input.get(n))) {
-                        draw = false;
-                        list = new ArrayList<Review>(output.values());
+                    Review rev  = input.get(n);
+                    if (rev.getVote() != 0) {
+                        if (!output.containsValue(rev)) {
+                            output.put(i, input.get(n));
+                            draw = false;
+                            list = new ArrayList<Review>(output.values());
+                        }
                     }
                 } while (draw);
             }
         }
+//        for (Map.Entry<Integer, Review> entry : output.entrySet()) {
+//            if (entry.getValue() == null) {
+//                System.err.println("NO TO KURWA MAMY PROBLEM1");
+//                int n = 0;
+//                boolean draw = true;
+//                Random rand = new Random();
+//                do {
+//                    System.err.println("NO TO KURWA MAMY PROBLEM WHILE...");
+//                    n = rand.nextInt(inputSize) + 1;
+//                    if (!output.containsValue(input.get(n))) {
+//                        draw = false;
+//                        list = new ArrayList<Review>(output.values());
+//                    }
+//                } while (draw);
+//            }
+//        }
         return list;
     }
 
@@ -307,6 +335,12 @@ public class MovieDataDownloader {
         return sentimentCoef;
     }
 
+    private static void setPath() {
+        Path currentRelativePath = Paths.get("");
+        PATH_BASE = currentRelativePath.toAbsolutePath().toString() + "/";
+        System.out.println(PATH_BASE);
+    }
+
     private void CreateJson() {
         Gson gson = new GsonBuilder()
                 .setPrettyPrinting()
@@ -320,7 +354,7 @@ public class MovieDataDownloader {
     private void SaveToFile(String data) {
         try {
             //write converted json data to a file named "file.json"
-            FileWriter writer = new FileWriter("/Users/Maciej/Desktop/IMDb-scraper/data/file.json");
+            FileWriter writer = new FileWriter(PATH_BASE + Serialize.DATA_PATH +  "file.json");
             writer.write(data);
             writer.close();
 
@@ -336,8 +370,8 @@ public class MovieDataDownloader {
         new Serialize(movieSer);
     }
 
-    private ArrayList<Movie> DeserializeThis(String location) {
-        Serialize serialize = new Serialize(location);
+    private ArrayList<Movie> DeserializeThis(String name) {
+        Serialize serialize = new Serialize(name);
         return serialize.getMovieArrayList();
     }
 }
