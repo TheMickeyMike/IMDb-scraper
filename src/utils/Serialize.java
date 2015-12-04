@@ -42,6 +42,7 @@ public class Serialize {
         } catch (IOException e) {
             e.printStackTrace();
         }
+        System.out.println("Object Serialized and saved");
     }
 
     private void ReadMovies(String location) {
