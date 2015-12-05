@@ -3,6 +3,7 @@ package utils;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import model.Movie;
+import model.Movies;
 import model.Review;
 import model.Sentiment;
 
@@ -12,8 +13,6 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
-import java.time.LocalDate;
-import java.time.format.DateTimeFormatter;
 import java.util.*;
 
 /**
@@ -73,6 +72,7 @@ public class MachineLearning {
                 System.out.println("Success!");
                 System.out.println("Saving new file...");
                 CreateJson();
+                SerializeThis();
             } else {
                 System.err.println("Error! Please try again");
                 //TODO back to the beginning
@@ -94,6 +94,7 @@ public class MachineLearning {
                 System.out.println("Success!");
                 System.out.println("Saving new file...");
                 CreateJson();
+                SerializeThis();
             } else {
                 System.err.println("Error! Please try again");
                 //TODO back to the beginning
@@ -143,5 +144,11 @@ public class MachineLearning {
             e.printStackTrace();
         }
         System.out.println("File saved!");
+    }
+
+    private void SerializeThis() {
+        Movies movieSer = new Movies();
+        movieSer.setMovies(movies);
+        new Serialize(movieSer);
     }
 }

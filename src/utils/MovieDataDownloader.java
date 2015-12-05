@@ -83,8 +83,8 @@ public class MovieDataDownloader {
     }
 
     public void starDownloading() {
-//        checkDese();
-        loadFromJson();
+        checkDese();
+//        loadFromJson();
 //        getTop250MoviesLink();
 //        downloadMovieData();
 //        CreateJson();
