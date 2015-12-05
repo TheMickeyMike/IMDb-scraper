@@ -8,6 +8,8 @@ import model.Sentiment;
 import org.apache.commons.math3.stat.regression.SimpleRegression;
 import utils.ReviewSentiment;
 
+import org.apache.commons.lang3.*;
+
 import java.io.*;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -18,15 +20,24 @@ import java.util.Map;
  */
 public class Regression {
     private String review;
-    private HashMap<Double, Integer> regData;
     private SimpleRegression regression;
     private ReviewSentiment reviewSentiment;
     private ArrayList<Movie> moviesFromJSON;
 
+    public static final String ANSI_RESET = "\u001B[0m";
+    public static final String ANSI_BLACK = "\u001B[30m";
+    public static final String ANSI_RED = "\u001B[31m";
+    public static final String ANSI_GREEN = "\u001B[32m";
+    public static final String ANSI_YELLOW = "\u001B[33m";
+    public static final String ANSI_BLUE = "\u001B[34m";
+    public static final String ANSI_PURPLE = "\u001B[35m";
+    public static final String ANSI_CYAN = "\u001B[36m";
+    public static final String ANSI_WHITE = "\u001B[37m";
+
     public Regression() {
         this.reviewSentiment = new ReviewSentiment();
         this.review = readReview();
-        this.regData = new HashMap<>();
+        this.regression = new SimpleRegression();
     }
 
     public void start() {
@@ -83,6 +94,7 @@ public class Regression {
             }
 
             int error = 0;
+            int add = 0;
             for (Movie mov : moviess) {
                 moviesFromJSON.add(mov);
                 for (Review review : mov.getReviews()) {
@@ -94,7 +106,8 @@ public class Regression {
                     } else {
                         double x = getCoeff(sentiment.getVeryNegative(), sentiment.getNegative(),
                                 sentiment.getNeutral(), sentiment.getPositive(), sentiment.getVeryPositive());
-                        regData.put(x, y);
+                        //Add data to regression model
+                        regression.addData(x,y);
                     }
                 }
             }
@@ -105,20 +118,13 @@ public class Regression {
     }
 
     private static double getCoeff(int veryNegative, int negative, int neutral, int positive, int veryPositive) {
-        int voteCount = veryNegative + negative + positive + veryPositive;
-        int coeff = ((veryNegative * -2) + (negative * -1) + (positive) + (veryPositive * 2)) / voteCount;
+        double voteCount = (double)veryNegative + (double)negative + (double)positive + (double)veryPositive;
+        double coeff = (((double)veryNegative * -2) + ((double)negative * -1) + ((double)positive) + ((double)veryPositive * 2)) / voteCount;
         return coeff;
     }
 
     private void calculateRegression(double rev_X) {
-        regression = new SimpleRegression();
 
-        //Set up pool data
-        for (Map.Entry<Double, Integer> entry : regData.entrySet()) {
-            double x = entry.getKey();
-            int y = entry.getValue();
-            regression.addData(x, y);
-        }
         System.out.println("All data accepted.");
         System.out.println("Intercept of regression line: " + regression.getIntercept());
         // displays intercept of regression line
@@ -129,7 +135,10 @@ public class Regression {
         System.out.println("Slope standard error: " + regression.getSlopeStdErr());
         // displays slope standard error
 
-        System.out.println("Predicted Y for review: " + regression.predict(rev_X));
+        System.out.println("Number of observations in the model :" + regression.getN());
+        //displays the number of observations that have been added to the model.
+
+        System.out.println(ANSI_GREEN + "Predicted Y for review: " + regression.predict(rev_X) + ANSI_RESET);
         // displays predicted y value for x = 1.5
 
     }
@@ -144,7 +153,7 @@ public class Regression {
         int orginalVote = 0;
         for (Movie movie : moviesFromJSON) {
             for (Review rev : movie.getReviews()) {
-                if (rev.getText() == review) {
+                if (rev.getText().contains(review)) {
                     orginalVote = rev.getVote();
                 }
             }
