@@ -110,6 +110,7 @@ public class MovieDataDownloader {
             }
             int error = 0;
             for (Movie mov : moviess) {
+                mov.getTittle();
                 for (Review review : mov.getReviews()) {
                     Sentiment sentiment = review.getSentiments();
                     if (sentiment.getNegative() + sentiment.getNeutral() + sentiment.getPositive() +
