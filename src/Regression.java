@@ -6,6 +6,7 @@ import com.google.gson.stream.JsonReader;
 import model.*;
 import model.Sentiment;
 import org.apache.commons.math3.stat.regression.SimpleRegression;
+import utils.ReviewSentiment;
 
 import java.io.*;
 import java.util.ArrayList;
@@ -17,20 +18,34 @@ import java.util.Map;
  */
 public class Regression {
     private String review;
-    private HashMap<Integer, Integer> regData;
+    private HashMap<Double, Integer> regData;
     private SimpleRegression regression;
+    private ReviewSentiment reviewSentiment;
+    private ArrayList<Movie> moviesFromJSON;
 
     public Regression() {
+        this.reviewSentiment = new ReviewSentiment();
         this.review = readReview();
         this.regData = new HashMap<>();
     }
 
     public void start() {
+        System.out.println("\n" + review + "\n");
         System.out.println("Loading data....");
         //Loading data to calculate regression
         loadFromJson();
+
+        //Parse user review to get sentiment
+        Sentiment sentiment = reviewSentiment.getReviewSentiment(review);
+        double rev_X = getReview_X(sentiment);
+        System.err.println("User review param X: " + rev_X);
+
         System.out.println("Calculate regression...");
-        calculateRegression(2);
+        calculateRegression(rev_X);
+
+        //What Y should be?
+        int orginalVote = askGod(review);
+        System.out.println("Orginal Vote: " + orginalVote);
 
     }
 
@@ -54,6 +69,7 @@ public class Regression {
     }
 
     private void loadFromJson() {
+        moviesFromJSON = new ArrayList<>();
         Gson gson = new Gson();
         try {
             JsonReader reader = new JsonReader(
@@ -66,31 +82,40 @@ public class Regression {
                 moviess.add(aTwitterUser);
             }
 
+            int error = 0;
             for (Movie mov : moviess) {
+                moviesFromJSON.add(mov);
                 for (Review review : mov.getReviews()) {
                     int y = review.getVote();
                     Sentiment sentiment = review.getSentiments();
-                    int x = getCoeff(sentiment.getVeryNegative(), sentiment.getNegative(),
-                            sentiment.getNeutral(), sentiment.getPositive(), sentiment.getVeryPositive());
-                    regData.put(x, y);
+                    if (sentiment.getVeryNegative() + sentiment.getNegative() +
+                            sentiment.getPositive() + sentiment.getVeryPositive() == 0) {
+                        error++;
+                    } else {
+                        double x = getCoeff(sentiment.getVeryNegative(), sentiment.getNegative(),
+                                sentiment.getNeutral(), sentiment.getPositive(), sentiment.getVeryPositive());
+                        regData.put(x, y);
+                    }
                 }
             }
+            System.err.println("Skipped reviews: " + error);
         } catch (IOException e) {
             e.printStackTrace();
         }
     }
 
-    private static int getCoeff(int veryNegative, int negative, int neutral, int positive, int veryPositive) {
-        int coeff = (veryNegative * 2) + (negative) + (positive) + (veryPositive * 2);
+    private static double getCoeff(int veryNegative, int negative, int neutral, int positive, int veryPositive) {
+        int voteCount = veryNegative + negative + positive + veryPositive;
+        int coeff = ((veryNegative * -2) + (negative * -1) + (positive) + (veryPositive * 2)) / voteCount;
         return coeff;
     }
 
-    private void calculateRegression(int rev_X) {
+    private void calculateRegression(double rev_X) {
         regression = new SimpleRegression();
 
         //Set up pool data
-        for (Map.Entry<Integer, Integer> entry : regData.entrySet()) {
-            int x = entry.getKey();
+        for (Map.Entry<Double, Integer> entry : regData.entrySet()) {
+            double x = entry.getKey();
             int y = entry.getValue();
             regression.addData(x, y);
         }
@@ -104,9 +129,26 @@ public class Regression {
         System.out.println("Slope standard error: " + regression.getSlopeStdErr());
         // displays slope standard error
 
-        System.out.println("Predicted Y for review: " + regression.predict(1.5d));
+        System.out.println("Predicted Y for review: " + regression.predict(rev_X));
         // displays predicted y value for x = 1.5
 
     }
 
+    private double getReview_X(Sentiment sentiment) {
+        double x = getCoeff(sentiment.getVeryNegative(), sentiment.getNegative(),
+                sentiment.getNeutral(), sentiment.getPositive(), sentiment.getVeryPositive());
+        return x;
+    }
+
+    private int askGod(String review) {
+        int orginalVote = 0;
+        for (Movie movie : moviesFromJSON) {
+            for (Review rev : movie.getReviews()) {
+                if (rev.getText() == review) {
+                    orginalVote = rev.getVote();
+                }
+            }
+        }
+        return orginalVote;
+    }
 }

@@ -34,7 +34,7 @@
         <entry file="file://$PROJECT_DIR$/src/utils/MovieDataDownloader.java">
           <provider selected="true" editor-type-id="text-editor">
             <state vertical-scroll-proportion="0.0">
-              <caret line="98" column="3" selection-start-line="98" selection-start-column="3" selection-end-line="129" selection-end-column="5" />
+              <caret line="76" column="5" selection-start-line="76" selection-start-column="5" selection-end-line="76" selection-end-column="5" />
               <folding>
                 <element signature="imports" expanded="true" />
                 <element signature="method#RemoveHtmlTags#0;class#MovieDataDownloader#0" expanded="false" />
@@ -49,7 +49,7 @@
         <entry file="file://$PROJECT_DIR$/src/utils/ReviewSentiment.java">
           <provider selected="true" editor-type-id="text-editor">
             <state vertical-scroll-proportion="0.0">
-              <caret line="78" column="81" selection-start-line="78" selection-start-column="73" selection-end-line="78" selection-end-column="81" />
+              <caret line="114" column="26" selection-start-line="114" selection-start-column="26" selection-end-line="114" selection-end-column="26" />
               <folding />
             </state>
           </provider>
@@ -58,8 +58,8 @@
       <file leaf-file-name="Regression.java" pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/src/Regression.java">
           <provider selected="true" editor-type-id="text-editor">
-            <state vertical-scroll-proportion="0.86206895">
-              <caret line="110" column="0" selection-start-line="110" selection-start-column="0" selection-end-line="110" selection-end-column="0" />
+            <state vertical-scroll-proportion="3.1724138">
+              <caret line="151" column="27" selection-start-line="151" selection-start-column="27" selection-end-line="151" selection-end-column="27" />
               <folding>
                 <element signature="imports" expanded="true" />
                 <element signature="method#readReview#0;class#Regression#0" expanded="false" />
@@ -95,7 +95,6 @@
         <option value="$PROJECT_DIR$/src/utils/DataDownloader.java" />
         <option value="$PROJECT_DIR$/src/utils/Paths.java" />
         <option value="$PROJECT_DIR$/src/utils/Serialize.java" />
-        <option value="$PROJECT_DIR$/src/utils/ReviewSentiment.java" />
         <option value="$PROJECT_DIR$/src/model/Movie.java" />
         <option value="$PROJECT_DIR$/src/model/Review.java" />
         <option value="$PROJECT_DIR$/src/model/Sentiment.java" />
@@ -103,6 +102,7 @@
         <option value="$PROJECT_DIR$/src/Sentiment.java" />
         <option value="$PROJECT_DIR$/data/review.txt" />
         <option value="$PROJECT_DIR$/src/Main.java" />
+        <option value="$PROJECT_DIR$/src/utils/ReviewSentiment.java" />
         <option value="$PROJECT_DIR$/src/Regression.java" />
       </list>
     </option>
@@ -123,7 +123,8 @@
     <treeState />
   </component>
   <component name="ProjectFrameBounds">
-    <option name="x" value="355" />
+    <option name="x" value="345" />
+    <option name="y" value="26" />
     <option name="width" value="1444" />
     <option name="height" value="972" />
   </component>
@@ -713,12 +714,12 @@
       <workItem from="1449082335691" duration="13144000" />
       <workItem from="1449241629409" duration="19257000" />
       <workItem from="1449265722140" duration="5279000" />
-      <workItem from="1449305409742" duration="18830000" />
+      <workItem from="1449305409742" duration="22943000" />
     </task>
     <servers />
   </component>
   <component name="TimeTrackingManager">
-    <option name="totallyTimeSpent" value="81290000" />
+    <option name="totallyTimeSpent" value="85403000" />
   </component>
   <component name="TodoView">
     <todo-panel id="selected-file">
@@ -730,7 +731,7 @@
     </todo-panel>
   </component>
   <component name="ToolWindowManager">
-    <frame x="355" y="0" width="1444" height="972" extended-state="0" />
+    <frame x="345" y="26" width="1444" height="972" extended-state="0" />
     <editor active="true" />
     <layout>
       <window_info id="Palette" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
@@ -1161,14 +1162,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/src/model/Movies.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.2413793">
-          <caret line="8" column="13" selection-start-line="8" selection-start-column="13" selection-end-line="8" selection-end-column="13" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/src/model/Movie.java">
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="0.0">
@@ -1227,10 +1220,18 @@
         </state>
       </provider>
     </entry>
+    <entry file="file://$PROJECT_DIR$/src/model/Movies.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.2413793">
+          <caret line="8" column="13" selection-start-line="8" selection-start-column="13" selection-end-line="8" selection-end-column="13" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
     <entry file="file://$PROJECT_DIR$/src/utils/MovieDataDownloader.java">
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="0.0">
-          <caret line="98" column="3" selection-start-line="98" selection-start-column="3" selection-end-line="129" selection-end-column="5" />
+          <caret line="76" column="5" selection-start-line="76" selection-start-column="5" selection-end-line="76" selection-end-column="5" />
           <folding>
             <element signature="imports" expanded="true" />
             <element signature="method#RemoveHtmlTags#0;class#MovieDataDownloader#0" expanded="false" />
@@ -1243,15 +1244,23 @@
     <entry file="file://$PROJECT_DIR$/src/utils/ReviewSentiment.java">
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="0.0">
-          <caret line="78" column="81" selection-start-line="78" selection-start-column="73" selection-end-line="78" selection-end-column="81" />
+          <caret line="114" column="26" selection-start-line="114" selection-start-column="26" selection-end-line="114" selection-end-column="26" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="jar://$PROJECT_DIR$/lib/commons-math3-3.5/commons-math3-3.5.jar!/org/apache/commons/math3/stat/regression/SimpleRegression.class">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.35193133">
+          <caret line="194" column="18" selection-start-line="194" selection-start-column="18" selection-end-line="194" selection-end-column="18" />
           <folding />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/src/Regression.java">
       <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.86206895">
-          <caret line="110" column="0" selection-start-line="110" selection-start-column="0" selection-end-line="110" selection-end-column="0" />
+        <state vertical-scroll-proportion="3.1724138">
+          <caret line="151" column="27" selection-start-line="151" selection-start-column="27" selection-end-line="151" selection-end-column="27" />
           <folding>
             <element signature="imports" expanded="true" />
             <element signature="method#readReview#0;class#Regression#0" expanded="false" />

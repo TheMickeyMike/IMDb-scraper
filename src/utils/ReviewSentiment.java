@@ -37,7 +37,7 @@ public class ReviewSentiment {
 
     public ReviewSentiment() {
         this.props = new Properties();
-        props.put("sentiment.model","E:\\NLP\\stanford-corenlp-full-2015-04-20\\model-0009-79,68.ser.gz");
+        props.put("sentiment.model", "E:\\NLP\\stanford-corenlp-full-2015-04-20\\model-0009-79,68.ser.gz");
         props.put("annotators", "tokenize, ssplit, pos, lemma, parse, sentiment");
         this.pipeline = new StanfordCoreNLP(props);
         int availableProcessors = Runtime.getRuntime().availableProcessors();
@@ -90,11 +90,45 @@ public class ReviewSentiment {
         }
     }
 
-    private void resetStats(){
-         veryPositive = 0;
-         positive = 0;
-         neutral = 0;
-         negative = 0;
-         veryNegative = 0;
+    public Sentiment getReviewSentiment(String userReview) {
+        Annotation annotation = pipeline.process(userReview);
+        List<CoreMap> sentences = annotation.get(CoreAnnotations.SentencesAnnotation.class);
+        for (CoreMap sentence : sentences) {
+            String sentiment = sentence.get(SentimentCoreAnnotations.SentimentClass.class);
+            switch (sentiment) {
+                case "Very positive":
+                    veryPositive++;
+                    break;
+                case "Positive":
+                    positive++;
+                    break;
+                case "Neutral":
+                    neutral++;
+                    break;
+                case "Negative":
+                    negative++;
+                    break;
+                case "Very negative":
+                    veryNegative++;
+                    break;
+                default:
+                    break;
+            }
+        }
+        System.out.println("##### User review stats ##### " +
+                "\nVary Neg: " +veryNegative +
+                "\nNegative: " + negative +
+                "\nNeutral: " + neutral +
+                "\nPositive: " + positive +
+                "\nVery positive: " + veryPositive);
+        return new Sentiment(veryPositive, positive, neutral, negative, veryNegative);
     }
-}
+
+private void resetStats(){
+        veryPositive=0;
+        positive=0;
+        neutral=0;
+        negative=0;
+        veryNegative=0;
+        }
+        }
