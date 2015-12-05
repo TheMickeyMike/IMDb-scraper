@@ -1,7 +1,7 @@
 package utils;
 
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
+import com.google.gson.*;
+import com.google.gson.stream.JsonReader;
 import edu.stanford.nlp.ling.CoreAnnotations;
 import edu.stanford.nlp.pipeline.Annotation;
 import edu.stanford.nlp.pipeline.StanfordCoreNLP;
@@ -16,13 +16,13 @@ import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 
-import java.io.FileWriter;
-import java.io.IOException;
+import java.io.*;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
+import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
@@ -57,7 +57,7 @@ public class MovieDataDownloader {
     private HashMap<String, String> linkMap = new HashMap<String, String>();
 
     private ArrayList<Movie> movies;
-
+    private CountDownLatch latch;
     private ExecutorService pool;
 
     private ReviewSentiment reviewSentiment;
@@ -67,22 +67,79 @@ public class MovieDataDownloader {
         setPath();
         System.out.println("Saving in: " + PATH_BASE);
         int availableProcessors = Runtime.getRuntime().availableProcessors();
+        availableProcessors = processingPower(availableProcessors);
         this.movies = new ArrayList<Movie>();
         this.URL = url;
+        this.latch = new CountDownLatch(250);
         this.pool = Executors.newFixedThreadPool(availableProcessors);
         System.out.println("Available Processing Power: " + availableProcessors);
         this.reviewSentiment = new ReviewSentiment();
     }
 
+    private int processingPower(int orginal) {
+        if (orginal == 4)
+            orginal = 7;
+        return orginal;
+    }
+
     public void starDownloading() {
-        getTop250MoviesLink();
-        downloadMovieData();
-        CreateJson();
-        reviewSentiment.getReviewSentiment(movies);
-        //Serialize all movies
-        SerializeThis();
-        //All movies downloaded, lets create Json file
-        CreateJson();
+//        checkDese();
+        loadFromJson();
+//        getTop250MoviesLink();
+//        downloadMovieData();
+//        CreateJson();
+//        reviewSentiment.getReviewSentiment(movies);
+//        //Serialize all movies
+//        System.err.println("Saving: " + movies.size() + " movies.");
+//        SerializeThis();
+//        //All movies downloaded, lets create Json file
+//        CreateJson();
+    }
+
+    private void loadFromJson() {
+        Gson gson = new Gson();
+        try {
+            JsonReader reader = new JsonReader(
+                    new InputStreamReader(new FileInputStream("C:\\Users\\Maciej\\Desktop\\IMDb-scraper\\data\\file.json")));
+            JsonParser jsonParser = new JsonParser();
+            JsonArray userarray= jsonParser.parse(reader).getAsJsonArray();
+            ArrayList<Movie> moviess = new ArrayList<>();
+            for ( JsonElement aUser : userarray ) {
+                Movie aTwitterUser = gson.fromJson(aUser, Movie.class);
+                moviess.add(aTwitterUser);
+            }
+            int error = 0;
+            for (Movie mov : moviess) {
+                for (Review review : mov.getReviews()) {
+                    Sentiment sentiment = review.getSentiments();
+                    if (sentiment.getNegative() + sentiment.getNeutral() + sentiment.getPositive() +
+                            sentiment.getVeryNegative() + sentiment.getVeryPositive() == 0) {
+                        error++;
+                        System.err.println(mov.getTittle() + " " + review.getTittle());
+                    }
+
+                }
+            }
+            System.out.println("IM OUT");
+
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+    }
+
+    private void checkDese() {
+        ArrayList<Movie> movieee = DeserializeThis("1");
+        System.err.println(movieee.size());
+        int all = 0;
+        for (Movie movie: movieee){
+            for (Review review : movie.getReviews()){
+                Sentiment sentiment = review.getSentiments();
+
+            }
+            all++;
+        }
+        System.err.println(all);
     }
 
     public void getTop250MoviesLink() {
@@ -116,15 +173,21 @@ public class MovieDataDownloader {
                 @Override
                 public void run() {
                     GetMovieReview(movieId);
+                    latch.countDown();
                 }
             });
         }
         pool.shutdown();
         try {
-            pool.awaitTermination(Long.MAX_VALUE, TimeUnit.NANOSECONDS);
-        } catch (InterruptedException e) {
-            e.printStackTrace();
+            latch.await();
+        } catch (InterruptedException E) {
+            E.printStackTrace();
         }
+//        try {
+//            pool.awaitTermination(Long.MAX_VALUE, TimeUnit.SECONDS);
+//        } catch (InterruptedException e) {
+//            e.printStackTrace();
+//        }
     }
 
     private void GetMovieReview(String id) {
@@ -333,6 +396,11 @@ public class MovieDataDownloader {
         sentimentCoef = new Sentiment(veryPositive, positive, neutral, negative, veryNegative);
         System.out.println(veryPositive + " " + positive + " " + neutral + " " + negative + " " + veryNegative);
         return sentimentCoef;
+    }
+
+    private synchronized ArrayList<Movie> getMovies() {
+        System.err.println(movies.size());
+        return movies;
     }
 
     private static void setPath() {

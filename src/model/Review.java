@@ -36,4 +36,9 @@ public class Review implements Serializable{
     public String getTittle() {
         return tittle;
     }
+
+    public Sentiment getSentiments() {
+        return sentiments;
+    }
+
 }

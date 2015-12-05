@@ -37,11 +37,11 @@ public class ReviewSentiment {
 
     public ReviewSentiment() {
         this.props = new Properties();
-        props.put("sentiment.model","/Users/Maciej/Desktop/IMDb-scraper/lib/stanford-corenlp-full-2015-04-20/models/model-0009-79,68.ser.gz");
+        props.put("sentiment.model","E:\\NLP\\stanford-corenlp-full-2015-04-20\\model-0009-79,68.ser.gz");
         props.put("annotators", "tokenize, ssplit, pos, lemma, parse, sentiment");
         this.pipeline = new StanfordCoreNLP(props);
         int availableProcessors = Runtime.getRuntime().availableProcessors();
-        this.pool = Executors.newFixedThreadPool(availableProcessors);
+        this.pool = Executors.newFixedThreadPool(1);
 
     }
 

@@ -18,4 +18,8 @@ public class Movie implements Serializable{
     public ArrayList<Review> getReviews() {
         return reviews;
     }
+
+    public String getTittle() {
+        return Tittle;
+    }
 }
