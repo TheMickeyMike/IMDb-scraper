@@ -21,6 +21,15 @@ public class Review implements Serializable{
         this.text = text;
     }
 
+    public Review(String tittle, String date, int vote, String text, Sentiment sentiment) {
+        this.tittle = tittle;
+        this.date = date;
+        this.vote = vote;
+        this.text = text;
+        this.sentiments = sentiment;
+    }
+
+
     public void setSentiments(Sentiment sentiments) {
         this.sentiments = sentiments;
     }

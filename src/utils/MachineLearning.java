@@ -56,20 +56,54 @@ public class MachineLearning {
         } while (vote < 1 && vote > 10);
 
         scanIn.close();
-        System.out.println(movieTittle);
-        int index = -1;
-        if ((index = isMovieinDb(movieTittle)) != -1) {
-            System.out.println("This movie is in Database\nPlease wait, we are enter your review...");
-            ArrayList<Review> reviews = movies.get(index).getReviews();
-            reviews.add();
 
+        int index = -1;
+
+        if ((index = isMovieInDb(movieTittle)) != -1) {
+            System.out.println("This movie is in Database\nPlease wait, we are enter your review...");
+            String currentDate = getDate();
+            Review newReview = new Review(reviewTittle, currentDate, vote, review, sentiment); //Remamber add sentiment!!!
+            ArrayList<Review> reviews = movies.get(index).getReviews();
+            int beforeTransaction = reviews.size();
+            reviews.add(newReview);
+            Movie movie = new Movie(movieTittle, reviews);
+            movies.set(index, movie);
+            //Validate transaction
+            if ((movie.getReviews().size() > beforeTransaction) && newReview.getSentiments() != null) {
+                System.out.println("Success!");
+                System.out.println("Saving new file...");
+                CreateJson();
+            } else {
+                System.err.println("Error! Please try again");
+                //TODO back to the beginning
+                return;
+            }
         } else {
+            System.out.println("Wooow, we don't have this movie! Thanks for new one.\nPlease wait, we are enter your review...");
+            String currentDate = getDate();
+            Review newReview = new Review(reviewTittle, currentDate, vote, review, sentiment); //Remamber add sentiment!!!
+            ArrayList<Review> reviews = new ArrayList<>();
+            int beforeTransaction = reviews.size();
+            int moviesBeforeTransaction = movies.size();
+            reviews.add(newReview);
+            Movie movie = new Movie(movieTittle, reviews);
+            movies.add(movie);
+            //Validate transaction
+            if ((movie.getReviews().size() > beforeTransaction) && newReview.getSentiments() != null
+                    && movies.size() > moviesBeforeTransaction) {
+                System.out.println("Success!");
+                System.out.println("Saving new file...");
+                CreateJson();
+            } else {
+                System.err.println("Error! Please try again");
+                //TODO back to the beginning
+                return;
+            }
             //TODO add new movie to DB
         }
-        getDate();
     }
 
-    private int isMovieinDb(String tittle) {
+    private int isMovieInDb(String tittle) {
         for (Movie movie : movies) {
             if (movie.getTittle().contains(tittle.trim()))
                 return movies.indexOf(movie);
@@ -80,7 +114,6 @@ public class MachineLearning {
     private String getDate() {
         DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd", Locale.ENGLISH);
         Date date = new Date();
-        System.out.println(dateFormat.format(date));
         return dateFormat.format(date);
     }
 
@@ -102,14 +135,13 @@ public class MachineLearning {
     private void SaveToFile(String data) {
         try {
             //write converted json data to a file named "file.json"
-            FileWriter writer = new FileWriter(PATH_BASE + Serialize.DATA_PATH +  "file.json");
+            FileWriter writer = new FileWriter(PATH_BASE + Serialize.DATA_PATH + "file.json");
             writer.write(data);
             writer.close();
 
         } catch (IOException e) {
             e.printStackTrace();
         }
-
+        System.out.println("File saved!");
     }
-
 }
