@@ -115,8 +115,8 @@ public class ReviewSentiment {
                     break;
             }
         }
-        System.out.println("##### User review stats ##### " +
-                "\nVary Neg: " +veryNegative +
+        System.out.println("\n##### User review stats ##### " +
+                "\nVery negative: " +veryNegative +
                 "\nNegative: " + negative +
                 "\nNeutral: " + neutral +
                 "\nPositive: " + positive +

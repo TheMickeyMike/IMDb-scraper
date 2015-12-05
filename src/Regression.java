@@ -8,6 +8,7 @@ import model.Sentiment;
 import org.apache.commons.math3.stat.correlation.Covariance;
 import org.apache.commons.math3.stat.correlation.PearsonsCorrelation;
 import org.apache.commons.math3.stat.regression.SimpleRegression;
+import utils.MachineLearning;
 import utils.ReviewSentiment;
 
 import org.apache.commons.lang3.*;
@@ -57,10 +58,14 @@ public class Regression {
         Sentiment sentiment = reviewSentiment.getReviewSentiment(review);
         double rev_X = getReview_X(sentiment);
 
-        System.out.println("Calculate regression...");
+        System.out.println("\nCalculate regression...");
         calculateRegression(rev_X);
 
+        //Covariance and Pearson's correlation
         pearsonCorel();
+
+        //Machine Learning
+        MachineLearning machineLearning = new MachineLearning(review,sentiment,moviesFromJSON);
 
     }
 
@@ -168,7 +173,6 @@ public class Regression {
             Y_y[i] = Y.get(i);
         }
 
-        //Covariance and correlation
         double pearsonCorel = new PearsonsCorrelation().correlation(X_x, Y_y);
         double covariance = new Covariance().covariance(X_x, Y_y);
 
