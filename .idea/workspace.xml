@@ -58,12 +58,23 @@
       <file leaf-file-name="Regression.java" pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/src/Regression.java">
           <provider selected="true" editor-type-id="text-editor">
-            <state vertical-scroll-proportion="0.41379312">
-              <caret line="137" column="57" selection-start-line="137" selection-start-column="57" selection-end-line="137" selection-end-column="57" />
+            <state vertical-scroll-proportion="0.6551724">
+              <caret line="175" column="45" selection-start-line="175" selection-start-column="45" selection-end-line="175" selection-end-column="45" />
               <folding>
                 <element signature="imports" expanded="true" />
-                <element signature="method#readReview#0;class#Regression#0" expanded="false" />
+                <element signature="method#getCoeff#0;class#Regression#0" expanded="false" />
+                <element signature="method#getReview_X#0;class#Regression#0" expanded="false" />
               </folding>
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="PearsonsCorrelation.class" pinned="false" current-in-tab="false">
+        <entry file="jar://$PROJECT_DIR$/lib/commons-math3-3.5/commons-math3-3.5.jar!/org/apache/commons/math3/stat/correlation/PearsonsCorrelation.class">
+          <provider selected="true" editor-type-id="text-editor">
+            <state vertical-scroll-proportion="-5.740741">
+              <caret line="111" column="18" selection-start-line="111" selection-start-column="18" selection-end-line="111" selection-end-column="18" />
+              <folding />
             </state>
           </provider>
         </entry>
@@ -72,7 +83,7 @@
         <entry file="file://$PROJECT_DIR$/src/Main.java">
           <provider selected="true" editor-type-id="text-editor">
             <state vertical-scroll-proportion="0.0">
-              <caret line="36" column="0" selection-start-line="36" selection-start-column="0" selection-end-line="36" selection-end-column="0" />
+              <caret line="18" column="0" selection-start-line="18" selection-start-column="0" selection-end-line="18" selection-end-column="0" />
               <folding />
             </state>
           </provider>
@@ -725,12 +736,12 @@
       <workItem from="1449082335691" duration="13144000" />
       <workItem from="1449241629409" duration="19257000" />
       <workItem from="1449265722140" duration="5279000" />
-      <workItem from="1449305409742" duration="26932000" />
+      <workItem from="1449305409742" duration="34313000" />
     </task>
     <servers />
   </component>
   <component name="TimeTrackingManager">
-    <option name="totallyTimeSpent" value="89392000" />
+    <option name="totallyTimeSpent" value="96773000" />
   </component>
   <component name="TodoView">
     <todo-panel id="selected-file">
@@ -784,14 +795,6 @@
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
-      <breakpoints>
-        <line-breakpoint enabled="true" type="java-line">
-          <url>file://$PROJECT_DIR$/src/Regression.java</url>
-          <line>53</line>
-          <properties />
-          <option name="timeStamp" value="90" />
-        </line-breakpoint>
-      </breakpoints>
       <breakpoints-dialog>
         <breakpoints-dialog />
       </breakpoints-dialog>
@@ -800,7 +803,7 @@
           <properties />
         </breakpoint>
       </default-breakpoints>
-      <option name="time" value="91" />
+      <option name="time" value="95" />
     </breakpoint-manager>
     <watches-manager />
   </component>
@@ -1260,14 +1263,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="jar://$PROJECT_DIR$/lib/commons-math3-3.5/commons-math3-3.5.jar!/org/apache/commons/math3/stat/regression/SimpleRegression.class">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.35193133">
-          <caret line="47" column="16" selection-start-line="47" selection-start-column="16" selection-end-line="47" selection-end-column="16" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
     <entry file="jar://C:/Program Files/Java/jdk1.8.0_45/src.zip!/java/lang/String.java">
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="0.3329223">
@@ -1282,26 +1277,43 @@
     <entry file="file://$PROJECT_DIR$/src/Main.java">
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="0.0">
-          <caret line="36" column="0" selection-start-line="36" selection-start-column="0" selection-end-line="36" selection-end-column="0" />
+          <caret line="18" column="0" selection-start-line="18" selection-start-column="0" selection-end-line="18" selection-end-column="0" />
           <folding />
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/src/model/Obs.java">
+    <entry file="jar://$PROJECT_DIR$/lib/commons-math3-3.5/commons-math3-3.5.jar!/org/apache/commons/math3/stat/correlation/PearsonsCorrelation.class">
       <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.29346487">
-          <caret line="14" column="0" selection-start-line="14" selection-start-column="0" selection-end-line="14" selection-end-column="0" />
+        <state vertical-scroll-proportion="-5.740741">
+          <caret line="111" column="18" selection-start-line="111" selection-start-column="18" selection-end-line="111" selection-end-column="18" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="jar://C:/Program Files/Java/jdk1.8.0_45/src.zip!/java/util/Formatter.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.3326572">
+          <caret line="4301" column="0" selection-start-line="4301" selection-start-column="0" selection-end-line="4301" selection-end-column="0" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="jar://$PROJECT_DIR$/lib/commons-math3-3.5/commons-math3-3.5.jar!/org/apache/commons/math3/stat/regression/SimpleRegression.class">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.35193133">
+          <caret line="207" column="18" selection-start-line="207" selection-start-column="18" selection-end-line="207" selection-end-column="18" />
           <folding />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/src/Regression.java">
       <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.41379312">
-          <caret line="137" column="57" selection-start-line="137" selection-start-column="57" selection-end-line="137" selection-end-column="57" />
+        <state vertical-scroll-proportion="0.6551724">
+          <caret line="175" column="45" selection-start-line="175" selection-start-column="45" selection-end-line="175" selection-end-column="45" />
           <folding>
             <element signature="imports" expanded="true" />
-            <element signature="method#readReview#0;class#Regression#0" expanded="false" />
+            <element signature="method#getCoeff#0;class#Regression#0" expanded="false" />
+            <element signature="method#getReview_X#0;class#Regression#0" expanded="false" />
           </folding>
         </state>
       </provider>

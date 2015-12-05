@@ -5,14 +5,18 @@ import com.google.gson.JsonParser;
 import com.google.gson.stream.JsonReader;
 import model.*;
 import model.Sentiment;
+import org.apache.commons.math3.stat.correlation.Covariance;
+import org.apache.commons.math3.stat.correlation.PearsonsCorrelation;
 import org.apache.commons.math3.stat.regression.SimpleRegression;
 import utils.ReviewSentiment;
 
 import org.apache.commons.lang3.*;
 
 import java.io.*;
+import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -23,6 +27,9 @@ public class Regression {
     private SimpleRegression regression;
     private ReviewSentiment reviewSentiment;
     private ArrayList<Movie> moviesFromJSON;
+    private List<Double> X = new ArrayList<>();
+    private List<Double> Y = new ArrayList<>();
+
 
     public static final String ANSI_RESET = "\u001B[0m";
     public static final String ANSI_BLACK = "\u001B[30m";
@@ -49,14 +56,11 @@ public class Regression {
         //Parse user review to get sentiment
         Sentiment sentiment = reviewSentiment.getReviewSentiment(review);
         double rev_X = getReview_X(sentiment);
-        System.err.println("User review param X: " + rev_X);
 
         System.out.println("Calculate regression...");
         calculateRegression(rev_X);
 
-        //What Y should be?
-        int orginalVote = askGod(review);
-        System.out.println("Orginal Vote: " + orginalVote);
+        pearsonCorel();
 
     }
 
@@ -107,7 +111,9 @@ public class Regression {
                         double x = getCoeff(sentiment.getVeryNegative(), sentiment.getNegative(),
                                 sentiment.getNeutral(), sentiment.getPositive(), sentiment.getVeryPositive());
                         //Add data to regression model
-                        regression.addData(x,y);
+                        regression.addData(x, y);
+                        X.add(x);
+                        Y.add((double) y);
                     }
                 }
             }
@@ -118,29 +124,9 @@ public class Regression {
     }
 
     private static double getCoeff(int veryNegative, int negative, int neutral, int positive, int veryPositive) {
-        double voteCount = (double)veryNegative + (double)negative + (double)positive + (double)veryPositive;
-        double coeff = (((double)veryNegative * -2) + ((double)negative * -1) + ((double)positive) + ((double)veryPositive * 2)) / voteCount;
+        double voteCount = (double) veryNegative + (double) negative + (double) positive + (double) veryPositive;
+        double coeff = (((double) veryNegative * -4) + ((double) negative * -1) + ((double) positive) + ((double) veryPositive * 4)) / voteCount;
         return coeff;
-    }
-
-    private void calculateRegression(double rev_X) {
-
-        System.out.println("All data accepted.");
-        System.out.println("Intercept of regression line: " + regression.getIntercept());
-        // displays intercept of regression line
-
-        System.out.println("Slope of regression line: " + regression.getSlope());
-        // displays slope of regression line
-
-        System.out.println("Slope standard error: " + regression.getSlopeStdErr());
-        // displays slope standard error
-
-        System.out.println("Number of observations in the model :" + regression.getN());
-        //displays the number of observations that have been added to the model.
-
-        System.out.println(ANSI_GREEN + "Predicted Y for review: " + regression.predict(rev_X) + ANSI_RESET);
-        // displays predicted y value for x = 1.5
-
     }
 
     private double getReview_X(Sentiment sentiment) {
@@ -149,15 +135,48 @@ public class Regression {
         return x;
     }
 
-    private int askGod(String review) {
-        int orginalVote = 0;
-        for (Movie movie : moviesFromJSON) {
-            for (Review rev : movie.getReviews()) {
-                if (rev.getText().contains(review)) {
-                    orginalVote = rev.getVote();
-                }
-            }
+    private void calculateRegression(double rev_X) {
+        String leftAlignFormatInt = "| %-40s  %-8d |%n";
+        String leftAlignFormat = "| %-40s  %-8f |%n";
+        String leftAlignFormatX = ANSI_YELLOW + "%n| %-25s %-8f %n" + ANSI_RESET;
+        String leftAlignFormatY = ANSI_GREEN + "| %-25s %-8f %n" + ANSI_RESET;
+
+
+        System.out.println("All data accepted.");
+        System.out.println(("\n+---------------Regression Statistics----------------+").toUpperCase());
+        System.out.format(leftAlignFormatInt, "Number of observations in the model:", regression.getN());
+        //displays the number of observations that have been added to the model.
+        System.out.format(leftAlignFormat, "Intercept of regression line: ", regression.getIntercept());
+        // displays intercept of regression line
+        System.out.format(leftAlignFormat, "Slope of regression line: ", regression.getSlope());
+        // displays slope of regression line
+        System.out.format(leftAlignFormat, "Slope standard error: ", regression.getSlopeStdErr());
+        // displays slope standard error
+        System.out.format(leftAlignFormatX, "User review X value: ", rev_X);
+        //display user review x value
+        System.out.format(leftAlignFormatY, "Predicted Y for review: ", regression.predict(rev_X));
+        // displays predicted y value
+    }
+
+    private void pearsonCorel() {
+        double[] X_x = new double[X.size()];
+        for (int i = 0; i < X_x.length; i++) {
+            X_x[i] = X.get(i);
         }
-        return orginalVote;
+        double[] Y_y = new double[Y.size()];
+        for (int i = 0; i < Y_y.length; i++) {
+            Y_y[i] = Y.get(i);
+        }
+
+        //Covariance and correlation
+        double pearsonCorel = new PearsonsCorrelation().correlation(X_x, Y_y);
+        double covariance = new Covariance().covariance(X_x, Y_y);
+
+        String leftAlignFormatP = ANSI_BLUE + "| %-40s %-8f |%n" + ANSI_RESET;
+        String leftAlignFormatC = ANSI_PURPLE + "| %-40s %-8f |%n" + ANSI_RESET;
+
+        System.out.println(("\n+------------Covariance and correlation-------------+").toUpperCase());
+        System.out.format(leftAlignFormatP, "Pearson's correlation: ", pearsonCorel);
+        System.out.format(leftAlignFormatC, "Covariance: ", covariance);
     }
 }
