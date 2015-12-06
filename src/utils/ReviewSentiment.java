@@ -35,13 +35,15 @@ public class ReviewSentiment {
     private Annotation annotation;
     private ExecutorService pool;
 
+    private static final int THREADS_NUM = 1;
+
     public ReviewSentiment() {
         this.props = new Properties();
         props.put("sentiment.model", "E:\\NLP\\stanford-corenlp-full-2015-04-20\\model-0009-79,68.ser.gz");
         props.put("annotators", "tokenize, ssplit, pos, lemma, parse, sentiment");
         this.pipeline = new StanfordCoreNLP(props);
         int availableProcessors = Runtime.getRuntime().availableProcessors();
-        this.pool = Executors.newFixedThreadPool(1);
+        this.pool = Executors.newFixedThreadPool(THREADS_NUM);
 
     }
 
