@@ -78,16 +78,17 @@ public class MovieDataDownloader {
 
     private int processingPower(int orginal) {
         if (orginal == 4)
-            orginal = 7;
+            orginal = 17;
         return orginal;
     }
 
     public void starDownloading() {
-        checkDese();
+//        checkDese();
 //        loadFromJson();
-//        getTop250MoviesLink();
-//        downloadMovieData();
-//        CreateJson();
+        getTop250MoviesLink();
+        downloadMovieData();
+        System.err.println("Saving: " + movies.size() + " movies.");
+        CreateJson();
 //        reviewSentiment.getReviewSentiment(movies);
 //        //Serialize all movies
 //        System.err.println("Saving: " + movies.size() + " movies.");
@@ -95,6 +96,7 @@ public class MovieDataDownloader {
 //        //All movies downloaded, lets create Json file
 //        CreateJson();
     }
+
 
     private void loadFromJson() {
         Gson gson = new Gson();
@@ -174,21 +176,37 @@ public class MovieDataDownloader {
                 @Override
                 public void run() {
                     GetMovieReview(movieId);
+                    System.err.println(latch.getCount());
                     latch.countDown();
                 }
             });
         }
-        pool.shutdown();
         try {
             latch.await();
         } catch (InterruptedException E) {
             E.printStackTrace();
         }
-//        try {
-//            pool.awaitTermination(Long.MAX_VALUE, TimeUnit.SECONDS);
-//        } catch (InterruptedException e) {
-//            e.printStackTrace();
-//        }
+        shutdownAndAwaitTermination(pool);
+    }
+
+
+
+    private void shutdownAndAwaitTermination(ExecutorService pool) {
+        pool.shutdown(); // Disable new tasks from being submitted
+        try {
+            // Wait a while for existing tasks to terminate
+            if (!pool.awaitTermination(60, TimeUnit.SECONDS)) {
+                pool.shutdownNow(); // Cancel currently executing tasks
+                // Wait a while for tasks to respond to being cancelled
+                if (!pool.awaitTermination(60, TimeUnit.SECONDS))
+                    System.err.println("Pool did not terminate");
+            }
+        } catch (InterruptedException ie) {
+            // (Re-)Cancel if current thread also interrupted
+            pool.shutdownNow();
+            // Preserve interrupt status
+            Thread.currentThread().interrupt();
+        }
     }
 
     private void GetMovieReview(String id) {

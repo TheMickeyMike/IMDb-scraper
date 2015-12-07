@@ -24,8 +24,8 @@ public class Main {
         Scanner s = new Scanner(System.in);
         System.out.println("getData (Start downloading big data.)");
         System.out.println("judgeMe (Start review vote prediction.)");
-//        String option = s.next();
-        String option = "judgeMe";
+        String option = s.next();
+//        String option = "judgeMe";
         if (option != null) {
             switch (option) {
                 case "getData":

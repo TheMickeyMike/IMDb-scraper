@@ -11,14 +11,11 @@ import org.apache.commons.math3.stat.regression.SimpleRegression;
 import utils.MachineLearning;
 import utils.ReviewSentiment;
 
-import org.apache.commons.lang3.*;
+
 
 import java.io.*;
-import java.text.DecimalFormat;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 /**
  * Created by Maciej on 2015-12-05.
