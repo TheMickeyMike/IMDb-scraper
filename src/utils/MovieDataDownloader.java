@@ -11,6 +11,7 @@ import model.Movie;
 import model.Movies;
 import model.Review;
 import model.Sentiment;
+import org.jsoup.Connection;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
@@ -62,6 +63,9 @@ public class MovieDataDownloader {
 
     private ReviewSentiment reviewSentiment;
 
+    private static int errorCount = 0;
+    private static final Object errorCountLock = new Object();
+
 
     public MovieDataDownloader(String url) {
         setPath();
@@ -88,6 +92,7 @@ public class MovieDataDownloader {
         getTop250MoviesLink();
         downloadMovieData();
         System.err.println("Saving: " + movies.size() + " movies.");
+        System.err.println("Errors :" + errorCount);
         CreateJson();
 //        reviewSentiment.getReviewSentiment(movies);
 //        //Serialize all movies
@@ -242,27 +247,42 @@ public class MovieDataDownloader {
             Elements total = doc.select("div#tn15content > table");
             String revCount = GetNumber(total.get(1).select("td").get(1).toString());
             url = url + ALL_REVIEWS + revCount;
-            doc = Jsoup.connect(url).userAgent("Mozilla").timeout(TIMEOUT).maxBodySize(0).get();
-            //System.out.println(doc);
+            Connection.Response response = Jsoup.connect(url)
+                    .userAgent("Mozilla")
+                    .timeout(TIMEOUT)
+                    .ignoreHttpErrors(true)
+                    .maxBodySize(0)
+                    .execute();
+            //doc = Jsoup.connect(url).userAgent("Mozilla").timeout(TIMEOUT).maxBodySize(0).get();
+            int statusCode = response.statusCode();
+            if (statusCode == 200) {
+                doc = response.parse();
+                //System.out.println(doc);
 
-            //Fetch ALL reviews
-            doc.select("div.yn").remove();
-            doc.select("p:has(b)").remove();
-            Elements div = doc.select("div#tn15content > div");
-            Elements p = doc.select("div#tn15content > p");
-            for (int i = 0; i < div.size(); i++) {
-                Element mDiv = div.get(i);
-                String reviewTittle = mDiv.select("h2").toString();
-                String vote = mDiv.getElementsByTag("img").attr("alt");
-                Elements small = mDiv.getElementsByTag("small");
-                String date = small.last().toString();
-                date = DateConverter(RemoveHtmlTags(date)).toString();
-                reviewTittle = RemoveHtmlTags(reviewTittle);
-                int voteInt = ConvertVote(vote);
-                String text = RemoveHtmlTags(p.get(i).toString());
+                //Fetch ALL reviews
+                doc.select("div.yn").remove();
+                doc.select("p:has(b)").remove();
+                Elements div = doc.select("div#tn15content > div");
+                Elements p = doc.select("div#tn15content > p");
+                for (int i = 0; i < div.size(); i++) {
+                    Element mDiv = div.get(i);
+                    String reviewTittle = mDiv.select("h2").toString();
+                    String vote = mDiv.getElementsByTag("img").attr("alt");
+                    Elements small = mDiv.getElementsByTag("small");
+                    String date = small.last().toString();
+                    date = DateConverter(RemoveHtmlTags(date)).toString();
+                    reviewTittle = RemoveHtmlTags(reviewTittle);
+                    int voteInt = ConvertVote(vote);
+                    String text = RemoveHtmlTags(p.get(i).toString());
 
-                //Add review to reviewsList
-                reviews.add(new Review(reviewTittle, date, voteInt, text)); //Na poczatku tablicy sa najlepsze recenzje (najwyzej ocenione przez uzytkownikow)
+                    //Add review to reviewsList
+                    reviews.add(new Review(reviewTittle, date, voteInt, text)); //Na poczatku tablicy sa najlepsze recenzje (najwyzej ocenione przez uzytkownikow)
+                }
+            } else if (statusCode == 503) {
+                synchronized (errorCountLock) {
+                    errorCount++;
+                }
+                System.out.print("HTTP error fetching URL. Status=503");
             }
 
         } catch (IOException e) {
